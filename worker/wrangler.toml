@@ -6,7 +6,7 @@ compatibility_date = "2024-11-06"
 [[d1_databases]]
 binding = "DB"
 database_name = "video-encode-db"
-database_id = "" # Will be set after creating the database
+database_id = "b203d9f2-2bf9-41e6-9eff-0c078b95d472"
 
 # Environment variables (API_KEY should be set as a secret)
 # Use: wrangler secret put API_KEY
