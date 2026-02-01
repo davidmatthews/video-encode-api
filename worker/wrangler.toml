@@ -10,3 +10,11 @@ database_id = "b203d9f2-2bf9-41e6-9eff-0c078b95d472"
 
 # Environment variables (API_KEY should be set as a secret)
 # Use: wrangler secret put API_KEY
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
