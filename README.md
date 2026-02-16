@@ -71,13 +71,13 @@ cd worker
 wrangler d1 create video-encode-db
 ```
 
-This will output a UUID (database ID) that looks like `a1b2c3d4-e5f6-7890-abcd-ef1234567890`. Copy this UUID (not the database name) and update `worker/wrangler.toml`:
+This will output a database ID. Copy it and update `worker/wrangler.toml`:
 
 ```toml
 [[d1_databases]]
 binding = "DB"
 database_name = "video-encode-db"
-database_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"  # Use the UUID from the output
+database_id = "YOUR_DATABASE_ID_HERE"
 ```
 
 3. Run the database schema:
