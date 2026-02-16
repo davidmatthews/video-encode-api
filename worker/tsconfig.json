@@ -7,7 +7,7 @@
     "types": ["@cloudflare/workers-types"],
     "jsx": "react",
     "jsxFactory": "h",
-    "jsxFragment": "Fragment",
+    "jsxFragmentFactory": "Fragment",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
