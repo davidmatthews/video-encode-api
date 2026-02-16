@@ -1,21 +1,24 @@
-// Load API key from localStorage
+// Load API key and Worker URL from localStorage
 const apiKeyInput = document.getElementById('apiKey');
+const workerUrlInput = document.getElementById('workerUrl');
 const storedApiKey = localStorage.getItem('videoEncodeApiKey');
-if (storedApiKey) {
-    apiKeyInput.value = storedApiKey;
-}
+const storedWorkerUrl = localStorage.getItem('videoEncodeWorkerUrl');
+if (storedApiKey) apiKeyInput.value = storedApiKey;
+if (workerUrlInput && storedWorkerUrl) workerUrlInput.value = storedWorkerUrl;
 
-// Save API key when changed
 apiKeyInput.addEventListener('change', () => {
     localStorage.setItem('videoEncodeApiKey', apiKeyInput.value);
 });
+if (workerUrlInput) {
+    workerUrlInput.addEventListener('change', () => {
+        localStorage.setItem('videoEncodeWorkerUrl', workerUrlInput.value.trim());
+    });
+}
 
-// Get API base URL from environment or use relative path
+// Get API base URL: Worker URL from input/localStorage, or /api for same-origin
 const getApiBaseUrl = () => {
-    // In production, replace with your Worker URL
-    // For local development, you might need to adjust this
-    const workerUrl = localStorage.getItem('videoEncodeWorkerUrl') || '';
-    return workerUrl || '/api';
+    const url = (workerUrlInput && workerUrlInput.value.trim()) || localStorage.getItem('videoEncodeWorkerUrl') || '';
+    return url.replace(/\/$/, '') || '/api';
 };
 
 // Mode toggle
@@ -89,7 +92,9 @@ form.addEventListener('submit', async (e) => {
     }
 
     try {
-        const response = await fetch(`${getApiBaseUrl()}/jobs`, {
+        const apiBase = getApiBaseUrl();
+        const jobsUrl = apiBase.startsWith('http') ? `${apiBase}/api/jobs` : `${apiBase}/jobs`;
+        const response = await fetch(jobsUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -98,10 +103,21 @@ form.addEventListener('submit', async (e) => {
             body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (_) {
+            if (!response.ok) {
+                showMessage(`API error (${response.status}): ${response.statusText}. Response was not JSON. Check that the API URL points to your Worker (e.g. https://video-encode-api.xxx.workers.dev) and that the Worker is deployed.`, 'error');
+                return;
+            }
+            showMessage('Server returned an empty or invalid response. Set the Worker URL above to your Cloudflare Worker URL (e.g. https://video-encode-api.xxx.workers.dev).', 'error');
+            return;
+        }
 
         if (!response.ok) {
-            throw new Error(data.error || 'Failed to add jobs');
+            throw new Error(data && data.error ? data.error : `Request failed (${response.status})`);
         }
 
         const count = Array.isArray(data) ? data.length : 1;

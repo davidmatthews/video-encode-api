@@ -176,7 +176,10 @@
         <p class="subtitle">Add single or multiple video encoding jobs</p>
 
         <div class="api-key-section">
-            <label for="apiKey">API Key</label>
+            <label for="workerUrl">API (Worker) URL</label>
+            <input type="url" id="workerUrl" placeholder="https://video-encode-api.xxx.workers.dev">
+            <div class="help-text">Your Cloudflare Worker URL. Required when the page is not served by the same Worker.</div>
+            <label for="apiKey" style="margin-top: 16px;">API Key</label>
             <input type="password" id="apiKey" placeholder="Enter your API key">
             <div class="help-text">Your API key is stored locally in your browser</div>
         </div>

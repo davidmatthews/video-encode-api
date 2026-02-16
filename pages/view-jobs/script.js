@@ -10,11 +10,27 @@ apiKeyInput.addEventListener('change', () => {
     localStorage.setItem('videoEncodeApiKey', apiKeyInput.value);
 });
 
-// Get API base URL from environment or use relative path
+// Get API base URL from localStorage or use relative path
 const getApiBaseUrl = () => {
     const workerUrl = localStorage.getItem('videoEncodeWorkerUrl') || '';
-    return workerUrl || '/api';
+    return (workerUrl || '/api').replace(/\/$/, '');
 };
+
+// Build full API URL (Worker uses /api prefix; relative /api does not)
+const getApiUrl = (path) => {
+    const base = getApiBaseUrl();
+    return base.startsWith('http') ? `${base}/api${path}` : `${base}${path}`;
+};
+
+async function parseJsonResponse(response) {
+    const text = await response.text();
+    if (!text) return null;
+    try {
+        return JSON.parse(text);
+    } catch {
+        return null;
+    }
+}
 
 let autoRefreshInterval = null;
 
@@ -113,19 +129,19 @@ async function loadJobs() {
     const statusParam = statusFilter !== 'all' ? `?status=${statusFilter}` : '';
 
     try {
-        const response = await fetch(`${getApiBaseUrl()}/jobs${statusParam}`, {
+        const response = await fetch(getApiUrl('/jobs') + statusParam, {
             headers: {
                 'X-API-Key': apiKey
             }
         });
 
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (!response.ok) {
-            throw new Error(data.error || 'Failed to load jobs');
+            throw new Error(data && data.error ? data.error : `Request failed (${response.status})`);
         }
 
-        renderJobs(data);
+        renderJobs(Array.isArray(data) ? data : []);
         hideMessage();
     } catch (error) {
         showMessage(error.message || 'An error occurred', 'error');
@@ -151,17 +167,17 @@ async function deleteJob(id) {
     }
 
     try {
-        const response = await fetch(`${getApiBaseUrl()}/jobs/${id}`, {
+        const response = await fetch(getApiUrl(`/jobs/${id}`), {
             method: 'DELETE',
             headers: {
                 'X-API-Key': apiKey
             }
         });
 
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (!response.ok) {
-            throw new Error(data.error || 'Failed to delete job');
+            throw new Error(data && data.error ? data.error : 'Failed to delete job');
         }
 
         showMessage('Job deleted successfully', 'success');
