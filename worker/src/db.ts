@@ -153,6 +153,23 @@ export class Database {
   }
 
   /**
+   * Reset a job: clear started and finished so it can be claimed again
+   */
+  async resetJob(id: number): Promise<Job | null> {
+    const stmt = this.db
+      .prepare('UPDATE jobs SET started = NULL, finished = NULL WHERE id = ?')
+      .bind(id);
+
+    const result = await stmt.run();
+
+    if (result.meta.changes === 0) {
+      return null; // Job not found
+    }
+
+    return this.getJobById(id);
+  }
+
+  /**
    * Delete a job
    */
   async deleteJob(id: number): Promise<boolean> {

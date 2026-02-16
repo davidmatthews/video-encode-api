@@ -25,6 +25,7 @@ All API requests (except health) require the `X-API-Key` header.
 | POST | `/api/jobs` | Add one or more jobs |
 | GET | `/api/jobs/claim` | Claim next pending job |
 | POST | `/api/jobs/:id/finish` | Mark job finished |
+| POST | `/api/jobs/:id/reset` | Reset job (clear started/finished so it can be claimed again) |
 | GET | `/api/jobs` | List jobs (optional `?status=`, `limit`, `offset`) |
 | DELETE | `/api/jobs/:id` | Delete a job |
 
@@ -68,6 +69,12 @@ Returns the job body (or 404 if none pending).
 **Finish a job**
 ```bash
 curl -X POST https://video-encode-api.davidmatthews.workers.dev/api/jobs/1/finish \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+**Reset a job** (clear started/finished so it can be claimed again; useful if a run failed or the result was wrong)
+```bash
+curl -X POST https://video-encode-api.davidmatthews.workers.dev/api/jobs/1/reset \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 

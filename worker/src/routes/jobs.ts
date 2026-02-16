@@ -99,6 +99,29 @@ jobs.post('/:id/finish', async (c: Context<{ Bindings: Env }>) => {
 });
 
 /**
+ * POST /api/jobs/:id/reset - Reset a job (clear started/finished so it can be claimed again)
+ */
+jobs.post('/:id/reset', async (c: Context<{ Bindings: Env }>) => {
+  try {
+    const id = parseInt(c.req.param('id'));
+    if (isNaN(id)) {
+      return c.json({ error: 'Invalid job ID' }, 400);
+    }
+
+    const db = new Database(c.env.DB);
+    const job = await db.resetJob(id);
+
+    if (!job) {
+      return c.json({ error: 'Job not found' }, 404);
+    }
+
+    return c.json(job);
+  } catch (error) {
+    return c.json({ error: 'Failed to reset job' }, 500);
+  }
+});
+
+/**
  * DELETE /api/jobs/:id - Delete a job
  */
 jobs.delete('/:id', async (c: Context<{ Bindings: Env }>) => {

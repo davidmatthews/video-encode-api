@@ -88,6 +88,7 @@ function renderJobs(jobs) {
                 <td class="timestamp">${formatTimestamp(job.finished)}</td>
                 <td class="timestamp">${formatTimestamp(job.created_at)}</td>
                 <td>
+                    ${job.started || job.finished ? `<button class="reset-btn" onclick="resetJob(${job.id})">Reset</button> ` : ''}
                     <button class="delete-btn" onclick="deleteJob(${job.id})">Delete</button>
                 </td>
             </tr>
@@ -143,6 +144,39 @@ async function loadJobs() {
                 <p>${escapeHtml(error.message)}</p>
             </div>
         `;
+    }
+}
+
+// Reset job (clear started/finished so it can be claimed again)
+async function resetJob(id) {
+    if (!confirm(`Reset job #${id}? This will clear its started/finished timestamps so it can be claimed again.`)) {
+        return;
+    }
+
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+        showMessage('Please enter an API key', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(getApiUrl(`/jobs/${id}/reset`), {
+            method: 'POST',
+            headers: {
+                'X-API-Key': apiKey
+            }
+        });
+
+        const data = await parseJsonResponse(response);
+
+        if (!response.ok) {
+            throw new Error(data && data.error ? data.error : 'Failed to reset job');
+        }
+
+        showMessage('Job reset successfully', 'success');
+        loadJobs();
+    } catch (error) {
+        showMessage(error.message || 'Failed to reset job', 'error');
     }
 }
 
