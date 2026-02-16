@@ -10,17 +10,9 @@ apiKeyInput.addEventListener('change', () => {
     localStorage.setItem('videoEncodeApiKey', apiKeyInput.value);
 });
 
-// Get API base URL from localStorage or use relative path
-const getApiBaseUrl = () => {
-    const workerUrl = localStorage.getItem('videoEncodeWorkerUrl') || '';
-    return (workerUrl || '/api').replace(/\/$/, '');
-};
-
-// Build full API URL (Worker uses /api prefix; relative /api does not)
-const getApiUrl = (path) => {
-    const base = getApiBaseUrl();
-    return base.startsWith('http') ? `${base}/api${path}` : `${base}${path}`;
-};
+// API base URL from config.js (single place to change: pages/config.js)
+const getApiBaseUrl = () => (window.VIDEO_ENCODE_API_BASE_URL || '').replace(/\/$/, '');
+const getApiUrl = (path) => `${getApiBaseUrl()}/api${path}`;
 
 async function parseJsonResponse(response) {
     const text = await response.text();

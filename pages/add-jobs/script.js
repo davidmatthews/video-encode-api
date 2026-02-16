@@ -1,25 +1,12 @@
-// Load API key and Worker URL from localStorage
+// Load API key from localStorage
 const apiKeyInput = document.getElementById('apiKey');
-const workerUrlInput = document.getElementById('workerUrl');
-const storedApiKey = localStorage.getItem('videoEncodeApiKey');
-const storedWorkerUrl = localStorage.getItem('videoEncodeWorkerUrl');
-if (storedApiKey) apiKeyInput.value = storedApiKey;
-if (workerUrlInput && storedWorkerUrl) workerUrlInput.value = storedWorkerUrl;
-
+if (localStorage.getItem('videoEncodeApiKey')) apiKeyInput.value = localStorage.getItem('videoEncodeApiKey');
 apiKeyInput.addEventListener('change', () => {
     localStorage.setItem('videoEncodeApiKey', apiKeyInput.value);
 });
-if (workerUrlInput) {
-    workerUrlInput.addEventListener('change', () => {
-        localStorage.setItem('videoEncodeWorkerUrl', workerUrlInput.value.trim());
-    });
-}
 
-// Get API base URL: Worker URL from input/localStorage, or /api for same-origin
-const getApiBaseUrl = () => {
-    const url = (workerUrlInput && workerUrlInput.value.trim()) || localStorage.getItem('videoEncodeWorkerUrl') || '';
-    return url.replace(/\/$/, '') || '/api';
-};
+// API base URL from config.js (single place to change: pages/config.js)
+const getApiBaseUrl = () => (window.VIDEO_ENCODE_API_BASE_URL || '').replace(/\/$/, '');
 
 // Mode toggle
 const singleModeBtn = document.getElementById('singleMode');
@@ -92,9 +79,7 @@ form.addEventListener('submit', async (e) => {
     }
 
     try {
-        const apiBase = getApiBaseUrl();
-        const jobsUrl = apiBase.startsWith('http') ? `${apiBase}/api/jobs` : `${apiBase}/jobs`;
-        const response = await fetch(jobsUrl, {
+        const response = await fetch(`${getApiBaseUrl()}/api/jobs`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -112,7 +97,7 @@ form.addEventListener('submit', async (e) => {
                 showMessage(`API error (${response.status}): ${response.statusText}. Response was not JSON. Check that the API URL points to your Worker (e.g. https://video-encode-api.xxx.workers.dev) and that the Worker is deployed.`, 'error');
                 return;
             }
-            showMessage('Server returned an empty or invalid response. Set the Worker URL above to your Cloudflare Worker URL (e.g. https://video-encode-api.xxx.workers.dev).', 'error');
+            showMessage('Server returned an empty or invalid response. Check that the API is deployed and reachable.', 'error');
             return;
         }
 
